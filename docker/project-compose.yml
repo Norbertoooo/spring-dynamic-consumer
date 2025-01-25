@@ -24,6 +24,26 @@ services:
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
 
+#  schema-registry:
+#    image: bitnami/schema-registry
+#    container_name: schema-registry
+#    ports:
+#      - "8081:8081"
+#      - "8082:8082"
+#    depends_on:
+#      - kafka
+#    environment:
+#      - SCHEMA_REGISTRY_KAFKA_BROKERS=PLAINTEXT://kafka:9092
+#      - SCHEMA_REGISTRY_HOST_NAME=schema-registry
+#      - SCHEMA_REGISTRY_LISTENERS=http://0.0.0.0:8081,https://0.0.0.0:8082
+#      - SCHEMA_REGISTRY_SSL_KEYSTORE_PASSWORD=keystore
+#      - SCHEMA_REGISTRY_SSL_TRUSTSTORE_PASSWORD=keystore
+#      - SCHEMA_REGISTRY_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM=none
+#      - SCHEMA_REGISTRY_CLIENT_AUTHENTICATION=REQUESTED
+#    volumes:
+#      - ./keystore.jks:/opt/bitnami/schema-registry/certs/keystore.jks:ro
+#      - ./truststore.jks:/opt/bitnami/schema-registry/certs/truststore.jks:ro
+
   kafka-ui:
     image: provectuslabs/kafka-ui
     container_name: kafka-ui
@@ -56,6 +76,75 @@ services:
     volumes:
       - ./prometheus/prometheus.yml:/opt/bitnami/prometheus/conf/prometheus.yml
 
+  airflow-postgresql:
+    container_name: airflow-postgresql
+    image: 'bitnami/postgresql:latest'
+    environment:
+      - POSTGRESQL_DATABASE=bitnami_airflow
+      - POSTGRESQL_USERNAME=bn_airflow
+      - POSTGRESQL_PASSWORD=bitnami1
+    volumes:
+      - ./postgresql:/bitnami/postgresql
+
+  airflow-redis:
+    container_name: airflow-redis
+    image: 'bitnami/redis:latest'
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    volumes:
+      - ./redis:/bitnami
+
+  airflow-worker:
+    container_name: airflow-worker
+    image: bitnami/airflow:latest
+    environment:
+      - AIRFLOW_COMPONENT_TYPE=worker
+      - AIRFLOW_FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
+      - AIRFLOW_SECRET_KEY=a25mQ1FHTUh3MnFRSk5KMEIyVVU2YmN0VGRyYTVXY08=
+      - AIRFLOW_EXECUTOR=CeleryExecutor
+      - AIRFLOW_DATABASE_NAME=bitnami_airflow
+      - AIRFLOW_DATABASE_USERNAME=bn_airflow
+      - AIRFLOW_DATABASE_PASSWORD=bitnami1
+      - AIRFLOW_LOAD_EXAMPLES=yes
+      - AIRFLOW_DATABASE_HOST=airflow-postgresql
+      - REDIS_HOST=airflow-redis
+
+  airflow-scheduler:
+    container_name: airflow-scheduler
+    image: bitnami/airflow:latest
+    environment:
+      - AIRFLOW_COMPONENT_TYPE=scheduler
+      - AIRFLOW_FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
+      - AIRFLOW_SECRET_KEY=a25mQ1FHTUh3MnFRSk5KMEIyVVU2YmN0VGRyYTVXY08=
+      - AIRFLOW_EXECUTOR=CeleryExecutor
+      - AIRFLOW_DATABASE_NAME=bitnami_airflow
+      - AIRFLOW_DATABASE_USERNAME=bn_airflow
+      - AIRFLOW_DATABASE_PASSWORD=bitnami1
+      - AIRFLOW_LOAD_EXAMPLES=yes
+      - AIRFLOW_DATABASE_HOST=airflow-postgresql
+      - REDIS_HOST=airflow-redis
+    volumes:
+      - ./airflow/dags:/opt/bitnami/airflow/dags
+
+  airflow:
+    container_name: airflow
+    image: bitnami/airflow:latest
+    environment:
+      - AIRFLOW_FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
+      - AIRFLOW_SECRET_KEY=a25mQ1FHTUh3MnFRSk5KMEIyVVU2YmN0VGRyYTVXY08=
+      - AIRFLOW_EXECUTOR=CeleryExecutor
+      - AIRFLOW_DATABASE_NAME=bitnami_airflow
+      - AIRFLOW_DATABASE_USERNAME=bn_airflow
+      - AIRFLOW_DATABASE_PASSWORD=bitnami1
+      - AIRFLOW_PASSWORD=bitnami123
+      - AIRFLOW_USERNAME=user
+      - AIRFLOW_EMAIL=user@example.com
+      - AIRFLOW_DATABASE_HOST=airflow-postgresql
+      - REDIS_HOST=airflow-redis
+    ports:
+      - '8085:8080'
+    volumes:
+      - ./airflow/dags:/opt/bitnami/airflow/dags
 networks:
   default:
     driver: bridge
