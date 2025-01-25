@@ -31,10 +31,10 @@ public class KafkaConsumerScheduler {
         var listenerContainer = kafkaListenerEndpointRegistry.getListenerContainer(containerId);
         if (Objects.nonNull(listenerContainer)) {
             if (flag) {
-                log.info("iniciando container: {}", containerId);
+                log.info("starting container: {}", containerId);
                 listenerContainer.start();
             } else {
-                log.info("destruindo container: {}", containerId);
+                log.info("destroying container: {}", containerId);
                 listenerContainer.destroy();
             }
         } else {

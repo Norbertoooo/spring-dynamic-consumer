@@ -8,15 +8,15 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-import static com.vitu.spring.dynamic.consumer.consumer.PersonConsumer.CONSUMER_ONE_ID;
-import static com.vitu.spring.dynamic.consumer.consumer.PersonConsumer.CONSUMER_TWO_ID;
+import static com.vitu.spring.dynamic.consumer.consumer.PersonConsumer.*;
 
 @Component
 public class PersonScheduler {
 
     private static final Logger log = LoggerFactory.getLogger(PersonScheduler.class);
 
-    private final List<String> containerIds = List.of(CONSUMER_ONE_ID, CONSUMER_TWO_ID);
+    private final List<String> containerIds = List.of(CONSUMER_ONE_ID, CONSUMER_TWO_ID, CONSUMER_THREE_ID,
+            CONSUMER_FOUR_ID, CONSUMER_FIVE_ID);
 
     private final KafkaConsumerScheduler kafkaConsumerScheduler;
 
@@ -26,13 +26,13 @@ public class PersonScheduler {
 
     @Scheduled(cron = "${app.scheduler.person.start}")
     public void startConsume() {
-        log.info("starting scheduler");
+        log.info("starting person scheduler");
         containerIds.forEach(kafkaConsumerScheduler::startConsumer);
     }
 
     @Scheduled(cron = "${app.scheduler.person.stop}")
     public void stopConsume() {
-        log.info("stopping scheduler");
+        log.info("stopping person scheduler");
         containerIds.forEach(kafkaConsumerScheduler::stopConsumer);
     }
 

@@ -28,4 +28,19 @@ public class PersonConsumer {
         log.info("consumer two: {}", records);
     }
 
+    @KafkaListener(id = CONSUMER_THREE_ID, topics = "${app.kafka.person.topic}", autoStartup = "false", batch = "true")
+    public void consumerThree(List<ConsumerRecord<?, ?>> records, Acknowledgment ack) {
+        log.info("consumer three: {}", records);
+    }
+
+    @KafkaListener(id = CONSUMER_FOUR_ID, topics = "${app.kafka.person.topic}", autoStartup = "false", batch = "true")
+    public void consumerFour(List<ConsumerRecord<?, ?>> records, Acknowledgment ack) {
+        log.info("consumer four: {}", records);
+    }
+
+    @KafkaListener(id = CONSUMER_FIVE_ID, topics = "${app.kafka.person.topic}", autoStartup = "false", batch = "true")
+    public void consumerFive(List<ConsumerRecord<?, ?>> records, Acknowledgment ack) {
+        log.info("consumer five: {}", records);
+    }
+
 }
