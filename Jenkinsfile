@@ -9,10 +9,10 @@ pipeline {
 	stages {
 		stage('Build') {
 			steps {
-				withMaven(jdk: '21') {
-					echo 'Building..'
-					sh 'mvn -B -DskipTests clean package'
-				}
+				echo 'Building..'
+				sh 'java -version'
+				sh 'mvn -v'
+				sh 'mvn -B -DskipTests clean package'
 			}
 		}
 		stage('Test') {
