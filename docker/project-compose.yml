@@ -105,9 +105,13 @@ services:
       - AIRFLOW_DATABASE_NAME=bitnami_airflow
       - AIRFLOW_DATABASE_USERNAME=bn_airflow
       - AIRFLOW_DATABASE_PASSWORD=bitnami1
+      - AIRFLOW_WEBSERVER_BASE_URL=airflow
       - AIRFLOW_LOAD_EXAMPLES=yes
       - AIRFLOW_DATABASE_HOST=airflow-postgresql
       - REDIS_HOST=airflow-redis
+    volumes:
+      - ./airflow/dags:/opt/bitnami/airflow/dags
+      - ./airflow/requirements.txt:/bitnami/python/requirements.txt
 
   airflow-scheduler:
     container_name: airflow-scheduler
@@ -125,6 +129,7 @@ services:
       - REDIS_HOST=airflow-redis
     volumes:
       - ./airflow/dags:/opt/bitnami/airflow/dags
+      - ./airflow/requirements.txt:/bitnami/python/requirements.txt
 
   airflow:
     container_name: airflow
@@ -145,6 +150,25 @@ services:
       - '8085:8080'
     volumes:
       - ./airflow/dags:/opt/bitnami/airflow/dags
+      - ./airflow/requirements.txt:/bitnami/python/requirements.txt
+
+  oracle-db:
+    container_name: oracle-db
+    image: gvenzl/oracle-free:latest-faststart
+    environment:
+      - ORACLE_PASSWORD=sys_admin_123
+    ports:
+      - "1521:1521"
+    healthcheck:
+      test: [ "CMD", "healthcheck.sh" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+      start_interval: 5s
+      # Mount a local SQL file to initialize your schema at startup
+    volumes:
+      - ./oracle/init.sql:/container-entrypoint-initdb.d/my-init.sql:ro
 networks:
   default:
     driver: bridge
