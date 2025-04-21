@@ -8,21 +8,21 @@
 
 ## Ferramentas
 
-- [ ] Spring boot
-- [ ] kafka
-- [ ] grafana
-- [ ] prometheus
-- [ ] jenkins
-- [ ] k8s
+- [x] Spring boot
+- [x] kafka
+- [x] grafana
+- [x] prometheus
+- [x] jenkins
+- [x] k8s
 - [ ] cucumber
 - [ ] robot
-- [ ] airflow
+- [x] airflow
 - [ ] avro
 - [ ] schema registry
 - [ ] mongodb
-- [ ] oracle
+- [x] oracle
 - [ ] checkstyle
-- [ ] jacoco
+- [x] jacoco
 - [ ] sonar
 - [ ] config server
 - [ ] flyway
