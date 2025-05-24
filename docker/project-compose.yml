@@ -169,6 +169,16 @@ services:
       # Mount a local SQL file to initialize your schema at startup
     volumes:
       - ./oracle/init.sql:/container-entrypoint-initdb.d/my-init.sql:ro
+
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: jenkins
+    ports:
+      - 8086:8080
+      - 50000:50000
+    volumes:
+      - ./jenkins-home:/var/jenkins_home
+
 networks:
   default:
     driver: bridge

@@ -34,3 +34,4 @@ build/
 
 docker/postgresql/
 docker/redis/
+docker/jenkins-home
