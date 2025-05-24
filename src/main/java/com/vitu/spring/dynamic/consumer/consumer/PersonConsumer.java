@@ -21,26 +21,31 @@ public class PersonConsumer {
     @KafkaListener(id = CONSUMER_ONE_ID, topics = "${app.kafka.person.topic}", autoStartup = "false", batch = "true")
     public void consumerOne(List<ConsumerRecord<?, ?>> records, Acknowledgment ack) {
         log.info("consumer one {}", records);
+        ack.acknowledge();
     }
 
     @KafkaListener(id = CONSUMER_TWO_ID, topics = "${app.kafka.person.topic}", autoStartup = "false", batch = "true")
     public void consumerTwo(List<ConsumerRecord<?, ?>> records, Acknowledgment ack) {
         log.info("consumer two: {}", records);
+        ack.acknowledge();
     }
 
     @KafkaListener(id = CONSUMER_THREE_ID, topics = "${app.kafka.person.topic}", autoStartup = "false", batch = "true")
     public void consumerThree(List<ConsumerRecord<?, ?>> records, Acknowledgment ack) {
         log.info("consumer three: {}", records);
+        ack.acknowledge();
     }
 
     @KafkaListener(id = CONSUMER_FOUR_ID, topics = "${app.kafka.person.topic}", autoStartup = "false", batch = "true")
     public void consumerFour(List<ConsumerRecord<?, ?>> records, Acknowledgment ack) {
         log.info("consumer four: {}", records);
+        ack.acknowledge();
     }
 
     @KafkaListener(id = CONSUMER_FIVE_ID, topics = "${app.kafka.person.topic}", autoStartup = "false", batch = "true")
     public void consumerFive(List<ConsumerRecord<?, ?>> records, Acknowledgment ack) {
         log.info("consumer five: {}", records);
+        ack.acknowledge();
     }
 
 }
