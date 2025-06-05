@@ -7,5 +7,3 @@ services:
       - 50000:50000
     volumes:
       - ./jenkins-home:/var/jenkins_home
-    environment:
-      - JENKINS_OPTS=--httpPort=8086
