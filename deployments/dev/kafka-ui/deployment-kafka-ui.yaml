@@ -23,6 +23,8 @@ spec:
               value: "kafka-ui-cluster"
             - name: KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS
               value: "kafka-internal:9092"
+            - name: KAFKA_CLUSTERS_0_SCHEMAREGISTRY
+              value: "192.168.0.53:8084"
 ---
 apiVersion: v1
 kind: Service
