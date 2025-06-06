@@ -1,8 +1,7 @@
-package com.vitu.spring.dynamic.consumer.scheduller;
+package com.vitu.spring.dynamic.consumer.scheduler;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import java.util.List;
 

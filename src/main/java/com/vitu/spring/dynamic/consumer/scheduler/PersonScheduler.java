@@ -1,4 +1,4 @@
-package com.vitu.spring.dynamic.consumer.scheduller;
+package com.vitu.spring.dynamic.consumer.scheduler;
 
 
 import org.slf4j.Logger;
