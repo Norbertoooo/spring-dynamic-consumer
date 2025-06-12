@@ -40,7 +40,11 @@ public class KafkaConsumerScheduler {
             if (enable) {
                 if (flag) {
                     log.info("starting container: {}", containerId);
-                    listenerContainer.get().start();
+                    if (listenerContainer.get().isRunning()) {
+                        log.info("container {} is already running", containerId);
+                    } else {
+                        listenerContainer.get().start();
+                    }
                 } else {
                     log.info("destroying container: {}", containerId);
                     listenerContainer.get().destroy();
