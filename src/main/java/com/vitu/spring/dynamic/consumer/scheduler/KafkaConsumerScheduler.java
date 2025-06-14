@@ -1,7 +1,7 @@
 package com.vitu.spring.dynamic.consumer.scheduler;
 
+import com.vitu.spring.dynamic.consumer.properties.PersonProperties;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.stereotype.Component;
 
@@ -15,12 +15,12 @@ import static java.lang.Boolean.TRUE;
 public class KafkaConsumerScheduler {
 
     private final KafkaListenerEndpointRegistry kafkaListenerEndpointRegistry;
+    private final PersonProperties personProperties;
 
-    @Value("${app.scheduler.person.enable}")
-    private Boolean enable;
-
-    public KafkaConsumerScheduler(KafkaListenerEndpointRegistry kafkaListenerEndpointRegistry) {
+    public KafkaConsumerScheduler(KafkaListenerEndpointRegistry kafkaListenerEndpointRegistry,
+                                  PersonProperties personProperties) {
         this.kafkaListenerEndpointRegistry = kafkaListenerEndpointRegistry;
+        this.personProperties = personProperties;
     }
 
     public void startConsumer(String containerId) {
@@ -37,7 +37,7 @@ public class KafkaConsumerScheduler {
         var listenerContainer = Optional.ofNullable(kafkaListenerEndpointRegistry.getListenerContainer(containerId));
 
         if (listenerContainer.isPresent()) {
-            if (enable) {
+            if (personProperties.getEnable()) {
                 if (flag) {
                     log.info("starting container: {}", containerId);
                     if (listenerContainer.get().isRunning()) {
