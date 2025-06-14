@@ -22,6 +22,8 @@
 
 O `config-server` é um serviço responsável por fornecer configurações centralizadas para outros serviços. Ele permite armazenar propriedades, arquivos de configuração e outros recursos necessários para a configuração dos aplicativos, além de possibilitar a atualização dinâmica desses recursos sem a necessidade de reiniciar os serviços consumidores.
 
+![Sem título-2024-06-14-1616](https://github.com/user-attachments/assets/12109e3d-0c7a-472f-968a-bc5e2ab79568)
+
 Mais informações: [spring-cloud-config-server](https://docs.spring.io/spring-cloud-config/docs/current/reference/html/)
 
 As classes responsáveis por essa atualização dinâmica são:
