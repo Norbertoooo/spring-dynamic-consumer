@@ -15,9 +15,9 @@ public class TestScheduler {
         this.testProperties = testProperties;
     }
 
-    @Scheduled(fixedDelay = 10000)
-    public void test() {
-        log.info("TestScheduler is running");
-        log.info("TestProperties name: {}", testProperties.getName());
-    }
+//    @Scheduled(fixedDelay = 10000)
+//    public void test() {
+//        log.info("TestScheduler is running");
+//        log.info("TestProperties name: {}", testProperties.getName());
+//    }
 }

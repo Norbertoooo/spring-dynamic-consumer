@@ -8,7 +8,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @Configuration
 @EnableScheduling
-@EnableFeignClients
+@EnableFeignClients(basePackages = "com.vitu.spring.dynamic.consumer.client")
 @EnableConfigurationProperties
 @ConfigurationPropertiesScan("com.vitu.spring.dynamic.consumer.properties")
 public class AppConfiguration {

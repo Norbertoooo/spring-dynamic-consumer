@@ -10,8 +10,29 @@ oracle_conn_id = 'oracle_conn'
 
 def producer(data):
     key = b'person-key'
-    value = json.dumps(data).encode('utf-8')
-    yield key, value
+
+    items = data[0] if len(data) == 1 and isinstance(data[0], list) else data
+
+    for item in items:
+        if not isinstance(item, (list, tuple)) or len(item) < 4:
+            print(f"Ignorando item inválido: {item}")
+            continue
+
+        id_, nome, cpf, data_ = item
+
+        # Converter datetime para string ISO, se for datetime
+        if isinstance(data_, datetime):
+            data_ = data_.isoformat()
+
+        record = {
+            "id": id_,
+            "nome": nome,
+            "cpf": cpf,
+            "data": data_,
+        }
+
+        value = json.dumps(record).encode('utf-8')
+        yield key, value
 
 person_dag = DAG(
     dag_id="person_dag",

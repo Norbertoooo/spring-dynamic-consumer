@@ -2,10 +2,13 @@ package com.vitu.spring.dynamic.consumer.domain;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import lombok.Data;
+import lombok.*;
 
 @Data
 @Entity
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Person {
 
     @Id
