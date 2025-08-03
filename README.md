@@ -1,25 +1,76 @@
 # Spring Dynamic Consumer
 
-A Spring Boot application that demonstrates dynamic Kafka consumer patterns with multiple enrichment steps for processing person data. This project showcases a flexible architecture for consuming messages from Kafka, enriching them with data from various services, and storing the results.
+Uma aplicação Spring Boot que demonstra padrões dinâmicos de consumo do Kafka com múltiplas etapas de enriquecimento para processamento de dados de pessoas. Este projeto apresenta uma arquitetura flexível para consumir mensagens do Kafka, enriquecê-las com dados de vários serviços e armazenar os resultados.
 
-## Architecture Overview
+## Visão Geral da Arquitetura
 
-The application follows a microservices architecture with the following components:
+A aplicação segue uma arquitetura de microsserviços com os seguintes componentes:
 
-- **Kafka Consumer**: Dynamically processes person data from Kafka topics
-- **Enrichment Chain**: Multiple enrichment steps that add additional data to person records
-- **External Service Integration**: Connects to various services (loans, credit cards, investments) to enrich data
-- **Data Persistence**: Stores enriched data in a database
-- **Airflow Integration**: Uses Airflow for orchestrating data pipelines and scheduling tasks
+- **Consumidor Kafka**: Processa dinamicamente dados de pessoas a partir de tópicos do Kafka
+- **Cadeia de Enriquecimento**: Múltiplas etapas de enriquecimento que adicionam dados adicionais aos registros de pessoas
+- **Integração com Serviços Externos**: Conecta-se a vários serviços (empréstimos, cartões de crédito, investimentos) para enriquecer dados
+- **Persistência de Dados**: Armazena dados enriquecidos em um banco de dados
+- **Integração com Airflow**: Utiliza o Airflow para orquestrar pipelines de dados e agendar tarefas
 
-### System Architecture Diagram
+## Padrões de Projeto Utilizados
+
+O projeto implementa diversos padrões de design para garantir flexibilidade, manutenibilidade e extensibilidade:
+
+### Padrões Comportamentais
+
+1. **Chain of Responsibility**: 
+   - Implementado na cadeia de enriquecimento onde cada handler (LoanEnrichment, CreditCardEnrichment, InvestmentEnrichment) processa os dados sequencialmente
+   - Cada implementação de `PersonEnrichment` decide se continua a cadeia (retornando `false`) ou interrompe o processamento (retornando `true`)
+   - A ordem de execução é controlada pela anotação `@Order` em cada implementação
+
+2. **Strategy**: 
+   - Diferentes estratégias de enriquecimento implementam a mesma interface `PersonEnrichment`
+   - Permite adicionar novas estratégias de enriquecimento sem modificar o código existente
+   - Facilita a troca de algoritmos de enriquecimento em tempo de execução
+
+3. **Observer**:
+   - Implementado através do sistema de eventos do Kafka
+   - Os consumidores observam tópicos específicos e reagem quando novas mensagens são publicadas
+
+### Padrões Criacionais
+
+1. **Builder**:
+   - Utilizado para criar objetos complexos como `Person` e `PersonEnrichmentDto`
+   - Permite a construção de objetos passo a passo com sintaxe fluente
+
+### Padrões Estruturais
+
+1. **Adapter**:
+   - Usado para integrar serviços externos através de clients como `LoanClient`
+   - Converte as respostas externas em formatos compatíveis com o modelo interno
+
+2. **Composite**:
+   - A lista de enriquecimentos (`personEnrichments`) é tratada como uma composição de objetos individuais
+   - Permite tratar um grupo de objetos da mesma forma que um objeto único
+
+### Padrões Arquiteturais
+
+1. **Dependency Injection**:
+   - Implementado através do Spring Framework
+   - Componentes recebem suas dependências em vez de criá-las
+   - Facilita testes e desacoplamento
+
+2. **Repository**:
+   - Abstrai o acesso a dados através de interfaces como `PersonEnrichmentRepository`
+   - Encapsula a lógica de armazenamento e recuperação de dados
+
+3. **Producer-Consumer**:
+   - Implementado com Kafka para comunicação assíncrona
+   - Desacopla a produção e o consumo de mensagens
+
+### Diagrama da Arquitetura do Sistema
 
 ```
 ┌─────────────┐     ┌─────────────┐     ┌─────────────────────┐
 │             │     │             │     │                     │
-│  Database   │────▶│   Airflow   │────▶│    Kafka Topics     │
-│  (Oracle)   │     │    DAGs     │     │                     │
-│             │     │             │     │                     │
+│  Banco de   │────▶│   Airflow   │────▶│  Tópicos do Kafka   │
+│   Dados     │     │    DAGs     │     │                     │
+│  (Oracle)   │     │             │     │                     │
 └─────────────┘     └─────────────┘     └──────────┬──────────┘
                                                    │
                                                    ▼
@@ -27,77 +78,78 @@ The application follows a microservices architecture with the following componen
 │                                                            │
 │                 Spring Dynamic Consumer                    │
 │                                                            │
-│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐     │
-│  │             │    │             │    │             │     │
-│  │   Kafka     │───▶│ Enrichment  │───▶│    Data     │     │
-│  │  Consumer   │    │    Chain    │    │ Persistence │     │
-│  │             │    │             │    │             │     │
-│  └─────────────┘    └──────┬──────┘    └─────────────┘     │
+│  ┌─────────────┐    ┌──────────────┐    ┌─────────────┐    │
+│  │             │    │              │    │             │    │
+│  │ Consumidor  │───▶│ Cadeia de    │───▶│ Persistência│    │
+│  │   Kafka     │    │Enriquecimento│    │  de Dados   │    │
+│  │             │    │              │    │             │    │
+│  └─────────────┘    └──────┬───────┘    └─────────────┘    │
 │                            │                               │
 └────────────────────────────┼───────────────────────────────┘
                              │
                              ▼
                     ┌─────────────────┐
                     │                 │
-                    │ External APIs   │
-                    │ (Loan, Credit,  │
-                    │  Investment)    │
+                    │   APIs Externas │
+                    │ (Empréstimo,    │
+                    │ Crédito,        │
+                    │ Investimento)   │
                     │                 │
                     └─────────────────┘
 ```
 
-### Key Components
+### Componentes Principais
 
-- **PersonConsumer**: Kafka listener that processes person messages
-- **PersonEnrichment**: Interface defining the enrichment contract
-- **Enrichment Implementations**: Various implementations (LoanEnrichment, CreditCardEnrichment, InvestmentEnrichment)
-- **PersonProducer**: Produces test messages to Kafka topics
-- **Airflow DAGs**: Orchestrates data pipelines and database-to-Kafka flows
+- **PersonConsumer**: Listener do Kafka que processa mensagens de pessoas
+- **PersonEnrichment**: Interface que define o contrato de enriquecimento
+- **Implementações de Enriquecimento**: Várias implementações (LoanEnrichment, CreditCardEnrichment, InvestmentEnrichment)
+- **PersonProducer**: Produz mensagens de teste para tópicos do Kafka
+- **DAGs do Airflow**: Orquestra pipelines de dados e fluxos de banco de dados para Kafka
 
-## Prerequisites
+## Pré-requisitos
 
-- Java 17 or higher
+- Java 21
 - Maven 3.6+
-- Docker and Docker Compose
+- Docker e Docker Compose
 - Kafka
-- Oracle Database
+- Banco de Dados Oracle
 - Airflow
 
-## Installation and Setup
+## Instalação e Configuração
 
-### Using Docker Compose
+### Usando Docker Compose
 
-The easiest way to run the application is using Docker Compose:
+A maneira mais fácil de executar a aplicação é usando o Docker Compose:
 
-1. Clone the repository:
+1. Clone o repositório:
    ```bash
    git clone https://github.com/yourusername/spring-dynamic-consumer.git
    cd spring-dynamic-consumer
    ```
 
-2. Start the infrastructure services:
+2. Inicie os serviços de infraestrutura:
    ```bash
    cd docker
    docker-compose -f project-compose.yml up -d
    ```
 
-3. Build and run the application:
+3. Compile e execute a aplicação:
    ```bash
    ./mvnw clean package
    java -jar target/spring-dynamic-consumer.jar
    ```
 
-### Manual Setup
+### Configuração Manual
 
-1. Start Kafka, Zookeeper, and Oracle DB
-2. Configure application properties
-3. Build and run the application
+1. Inicie o Kafka, Zookeeper e Oracle DB
+2. Configure as propriedades da aplicação
+3. Compile e execute a aplicação
 
-## Usage Examples
+## Exemplos de Uso
 
-### Producing Messages to Kafka
+### Produzindo Mensagens para o Kafka
 
-The application includes a scheduled producer that sends person data to Kafka every 10 seconds:
+A aplicação inclui um produtor agendado que envia dados de pessoas para o Kafka a cada 10 segundos:
 
 ```java
 @Scheduled(fixedDelay = 10000)
@@ -107,9 +159,9 @@ public void send() {
 }
 ```
 
-### Consuming and Enriching Messages
+### Consumindo e Enriquecendo Mensagens
 
-The PersonConsumer listens to Kafka topics and processes messages through a chain of enrichment steps:
+O PersonConsumer escuta tópicos do Kafka e processa mensagens através de uma cadeia de etapas de enriquecimento:
 
 ```java
 @KafkaListener(id = CONSUMER_ONE_ID, topics = "${app.kafka.person.topic}", autoStartup = "false", batch = "true")
@@ -133,12 +185,12 @@ public void consumerOne(List<ConsumerRecord<String, Person>> records, Acknowledg
 }
 ```
 
-### Using Airflow DAGs
+### Usando DAGs do Airflow
 
-The project includes Airflow DAGs for orchestrating data pipelines:
+O projeto inclui DAGs do Airflow para orquestrar pipelines de dados:
 
 ```
-# Example from person_dag.py
+# Exemplo de person_dag.py
 import datetime
 import json
 
@@ -146,10 +198,10 @@ from airflow import DAG
 from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
 from airflow.providers.apache.kafka.operators.produce import ProduceToTopicOperator
 
-# Define connection ID
+# Define o ID de conexão
 oracle_conn_id = 'oracle_conn'
 
-# Define producer function
+# Define a função do produtor
 def producer(data):
     key = b'person-key'
     
@@ -169,14 +221,14 @@ def producer(data):
         value = json.dumps(record).encode('utf-8')
         yield key, value
 
-# Create DAG
+# Cria o DAG
 person_dag = DAG(
     dag_id="person_dag",
     start_date=datetime.datetime(2021, 1, 1),
     schedule=None,
 )
 
-# SQL task to extract data
+# Tarefa SQL para extrair dados
 primeira_task = SQLExecuteQueryOperator(
     dag=person_dag,
     task_id="primeira_task", 
@@ -186,7 +238,7 @@ primeira_task = SQLExecuteQueryOperator(
     show_return_value_in_logs='True'
 )
 
-# Kafka producer task
+# Tarefa do produtor Kafka
 segunda_task = ProduceToTopicOperator(
     kafka_config_id="kafka_conn",
     task_id="segunda_task",
@@ -195,15 +247,15 @@ segunda_task = ProduceToTopicOperator(
     producer_function_kwargs={"data": "{{ti.xcom_pull(task_ids='primeira_task', key='return_value')}}"}
 )
 
-# Define task dependencies
+# Define as dependências de tarefas
 primeira_task >> segunda_task
 ```
 
-## Configuration Options
+## Opções de Configuração
 
-### Application Properties
+### Propriedades da Aplicação
 
-Key configuration options in `application.properties`:
+Opções de configuração principais em `application.properties`:
 
 ```properties
 spring.application.name=spring-dynamic-consumer
@@ -216,63 +268,63 @@ spring.kafka.producer.key-serializer=org.springframework.kafka.support.serialize
 spring.kafka.producer.value-serializer=org.springframework.kafka.support.serializer.JsonSerializer
 ```
 
-Additional configuration options can be found in `application-local.properties`.
+Opções de configuração adicionais podem ser encontradas em `application-local.properties`.
 
-## Development Guidelines
+## Diretrizes de Desenvolvimento
 
-### Adding New Enrichment Steps
+### Adicionando Novas Etapas de Enriquecimento
 
-1. Create a new class that implements the `PersonEnrichment` interface
-2. Add the `@Component` and `@Order` annotations
-3. Implement the `handle` method to perform the enrichment
-4. Return `false` to continue the chain or `true` to stop processing
+1. Crie uma nova classe que implementa a interface `PersonEnrichment`
+2. Adicione as anotações `@Component` e `@Order`
+3. Implemente o método `handle` para realizar o enriquecimento
+4. Retorne `false` para continuar a cadeia ou `true` para interromper o processamento
 
-Example:
+Exemplo:
 ```java
 @Component
 @Order(3)
 public class NewEnrichment implements PersonEnrichment<Person, PersonEnrichmentDto> {
     @Override
     public boolean handle(PersonContext<Person, PersonEnrichmentDto> personContext) {
-        // Enrichment logic here
-        return false; // Continue the chain
+        // Lógica de enriquecimento aqui
+        return false; // Continua a cadeia
     }
 }
 ```
 
-### Testing
+### Testes
 
-The project includes unit tests for components. Run tests with:
+O projeto inclui testes unitários para componentes. Execute os testes com:
 
 ```bash
 ./mvnw test
 ```
 
-## Deployment
+## Implantação
 
-### Development Environment
+### Ambiente de Desenvolvimento
 
-Use the provided Docker Compose files to set up the development environment:
+Use os arquivos Docker Compose fornecidos para configurar o ambiente de desenvolvimento:
 
 ```bash
 docker-compose -f docker/project-compose.yml up -d
 ```
 
-### Production Environment
+### Ambiente de Produção
 
-For production deployment:
+Para implantação em produção:
 
-1. Configure environment-specific properties
-2. Use Kubernetes or similar orchestration platform
-3. Set up monitoring with Prometheus and Grafana
+1. Configure propriedades específicas do ambiente
+2. Use Kubernetes ou plataforma de orquestração similar
+3. Configure monitoramento com Prometheus e Grafana
 
-## Contributing
+## Contribuindo
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Submit a pull request
+1. Faça um fork do repositório
+2. Crie uma branch de feature
+3. Faça suas alterações
+4. Envie um pull request
 
-## License
+## Licença
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+Este projeto está licenciado sob a Licença MIT - veja o arquivo LICENSE para detalhes.
